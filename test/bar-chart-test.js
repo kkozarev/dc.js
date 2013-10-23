@@ -571,9 +571,9 @@ suite.addBatch({'ordinal bar chart': {
         assert.equal(chart.select("rect.bar").attr("width"), "144");
     },
     'should position bars based on ordinal range': function (chart) {
-        assert.match(d3.select(chart.selectAll("rect.bar")[0][0]).attr("x"), /0\.\d+/);
-        assert.match(d3.select(chart.selectAll("rect.bar")[0][3]).attr("x"), /583\.\d+/);
-        assert.match(d3.select(chart.selectAll("rect.bar")[0][5]).attr("x"), /438\.\d+/);
+        assert.match(d3.select(chart.selectAll("rect.bar")[0][0]).attr("x"), /73(\.\d+)?/);
+        assert.match(d3.select(chart.selectAll("rect.bar")[0][3]).attr("x"), /656(\.\d+)?/);
+        assert.match(d3.select(chart.selectAll("rect.bar")[0][5]).attr("x"), /511(\.\d+)?/);
     },
     'should respect specified domain order': function (chart) {
         // note bar chart works differently from pie chart in that the bars objects don't

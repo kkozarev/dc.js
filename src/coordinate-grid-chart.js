@@ -58,7 +58,6 @@ dc.coordinateGridChart = function (_chart) {
 
     _chart.rescale = function () {
         _unitCount = undefined;
-        _chart.xUnitCount();
     };
 
     /**
@@ -271,19 +270,6 @@ dc.coordinateGridChart = function (_chart) {
         return _chart.xUnits() === dc.units.ordinal;
     };
 
-    _chart.prepareOrdinalXAxis = function (count) {
-        if (!count)
-            count = _chart.xUnitCount();
-        var range = [];
-        var increment = _chart.xAxisLength() / (count + 1);
-        var currentPosition = increment/2;
-        for (var i = 0; i < count; i++) {
-            range[i] = currentPosition;
-            currentPosition += increment;
-        }
-        _x.range(range);
-    };
-
     function prepareXAxis(g) {
         if (_chart.elasticX() && !_chart.isOrdinal()) {
             _x.domain([_chart.xAxisMin(), _chart.xAxisMax()]);
@@ -294,7 +280,7 @@ dc.coordinateGridChart = function (_chart) {
         }
 
         if (_chart.isOrdinal()) {
-            _chart.prepareOrdinalXAxis();
+            _x.rangeBands([0,_chart.xAxisLength()],0,0.5);
         } else {
             _x.range([0, _chart.xAxisLength()]);
         }
@@ -315,7 +301,7 @@ dc.coordinateGridChart = function (_chart) {
         var axisXLab = g.selectAll("text."+X_AXIS_LABEL_CLASS);
         if (axisXLab.empty() && _chart.xAxisLabel())
             axisXLab = g.append('text')
-                .attr("transform", "translate(" + _chart.xAxisLength() / 2 + "," + (_chart.height() - _xAxisLabelPadding) + ")")
+                .attr("transform", "translate(" + (_chart.margins().left + _chart.xAxisLength() / 2) + "," + (_chart.height() - _xAxisLabelPadding) + ")")
                 .attr('class', X_AXIS_LABEL_CLASS)
                 .attr('text-anchor', 'middle')
                 .text(_chart.xAxisLabel());
@@ -413,7 +399,7 @@ dc.coordinateGridChart = function (_chart) {
         var axisYLab = g.selectAll("text."+Y_AXIS_LABEL_CLASS);
         if (axisYLab.empty() && _chart.yAxisLabel())
             axisYLab = g.append('text')
-                .attr("transform", "translate(" + _yAxisLabelPadding + "," + _chart.yAxisHeight()/2 + "),rotate(-90)")
+                .attr("transform", "translate(" + _yAxisLabelPadding + "," + (_chart.margins().top + _chart.yAxisHeight()/2) + "),rotate(-90)")
                 .attr('class', Y_AXIS_LABEL_CLASS)
                 .attr('text-anchor', 'middle')
                 .text(_chart.yAxisLabel());

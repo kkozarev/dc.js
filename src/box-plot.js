@@ -10,48 +10,54 @@ dc.boxPlot = function (parent, chartGroup) {
 
     // defaut padding to handle min/max whisker text
     _chart.yAxisPadding(12);
+    // default to ordinal
+    _chart.x(d3.scale.ordinal());
+    _chart.xUnits(dc.units.ordinal);
 
-    function groupData() {
-        return _chart.group().all().map(function (kv) {
-            kv.map = function () { return _chart.valueAccessor()(kv); };
-            return kv;
+    // valueAccessor should return an array of values that can be coerced into numbers
+    //  or if data is overloaded for a static array of arrays, it should be `Number`
+    _chart.data(function(group) {
+        return group.all().map(function (d) {
+            d.map = function(accessor) { return accessor.call(d,d); };
+            return d;
         });
-    }
+    });
 
     _chart.plotData = function () {
-        // TODO: expose to customize
-        _boxWidth = 0.2 * _chart.effectiveWidth() / (_chart.xUnitCount() + 1);
+        // TODO: expose padding to as an option in coordinate-grid-chart
+        _boxWidth = 0.2 * _chart.x().rangeBand();
 
         _box.whiskers(_whiskers)
             .width(_boxWidth)
             .height(_chart.effectiveHeight())
+            .value(_chart.valueAccessor())
             .domain(_chart.y().domain());
 
-        // TODO: figure out why the .data call end up cause numbers to be added to the domain
-        var saveDomain = Array.prototype.slice.call(_chart.x().domain(), 0);
         _chart.chartBodyG().selectAll('g.box')
-            .data(groupData())
+            .data(_chart.data())
           .enter().append("g")
             .attr("class", "box")
-            .attr("transform", function (d, i) { return "translate(" + (_chart.x()(i) - _boxWidth / 2) + ",0)"; }) //-"+_chart.margins().bottom+")"; })
+            .attr("transform", function (d,i) {
+                var xOffset = _chart.x()(_chart.keyAccessor()(d,i));
+                xOffset += _chart.x().rangeBand()/2;
+                xOffset -= _boxWidth/2;
+                return "translate(" + xOffset + ",0)";
+            })
             .call(_box);
-        _chart.x().domain(saveDomain);
     };
 
     _chart.yAxisMin = function () {
-        var min = d3.min(_chart.group().all(), function (e) {
+        var min = d3.min(_chart.data(), function (e) {
             return d3.min(_chart.valueAccessor()(e));
         });
-        min = dc.utils.subtract(min, _chart.yAxisPadding());
-        return min;
+        return dc.utils.subtract(min, _chart.yAxisPadding());
     };
 
     _chart.yAxisMax = function () {
-        var max = d3.max(_chart.group().all(), function (e) {
+        var max = d3.max(_chart.data(), function (e) {
             return d3.max(_chart.valueAccessor()(e));
         });
-        max = dc.utils.add(max, _chart.yAxisPadding());
-        return max;
+        return dc.utils.add(max, _chart.yAxisPadding());
     };
 
     // Returns a function to compute the interquartile range.
